@@ -150,7 +150,7 @@ export class AuthController {
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async walletLogin(@Body() dto: WalletLoginDto) {
     // Construct message to verify
-    const message = `Sign this message to authenticate with Stellara: ${dto.nonce}`;
+    const message = `Sign this message to authenticate with Selah: ${dto.nonce}`;
 
     // Verify signature
     const isValid = await this.walletService.verifySignature(
@@ -402,7 +402,7 @@ export class AuthController {
   @ApiResponse({ status: 409, description: 'Wallet already bound' })
   async bindWallet(@Request() req, @Body() dto: BindWalletDto) {
     // Construct message to verify
-    const message = `Sign this message to authenticate with Stellara: ${dto.nonce}`;
+    const message = `Sign this message to authenticate with Selah: ${dto.nonce}`;
 
     // Verify signature first — if it's invalid there is no point consuming a nonce
     const isValid = await this.walletService.verifySignature(

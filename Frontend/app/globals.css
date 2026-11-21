@@ -34,6 +34,8 @@ dialog,
   max-height: calc(100vh - 2rem);
   height: fit-content;
   width: fit-content;
+}
+
 ::selection {
   background: rgb(59 59 240 / 45%);
   color: var(--foreground);

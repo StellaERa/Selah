@@ -1,27 +1,24 @@
 "use client";
 
 import {
+  useEffect,
   useRef,
   useState,
   useSyncExternalStore,
   type KeyboardEvent,
 } from "react";
-import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { label: "Academy", href: "#academy" },
-  { label: "AI Assistant", href: "#ai-assistant" },
-  { label: "Community", href: "#community" },
-  { label: "Trade", href: "#trade" },
-  { label: "News", href: "#news" },
+  { label: "Study", href: "#study" },
+  { label: "Mentors", href: "#mentors" },
+  { label: "Groups", href: "#groups" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Profile", href: "/profile" },
-  { label: "ABI Admin", href: "/admin/abis" },
 ] as const;
 
-const NOTIFICATION_STORAGE_KEY = "quoin:notifications";
+const NOTIFICATION_STORAGE_KEY = "Selah:notifications";
 
 function getUnreadNotificationCount(): number {
   try {
@@ -112,10 +109,10 @@ export default function Navbar() {
     const refreshCount = () => setUnreadNotificationCount(getUnreadNotificationCount());
     refreshCount();
     window.addEventListener("storage", refreshCount);
-    window.addEventListener("quoin:notifications-updated", refreshCount);
+    window.addEventListener("Selah:notifications-updated", refreshCount);
     return () => {
       window.removeEventListener("storage", refreshCount);
-      window.removeEventListener("quoin:notifications-updated", refreshCount);
+      window.removeEventListener("Selah:notifications-updated", refreshCount);
     };
   }, []);
 
@@ -123,7 +120,7 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full bg-primary px-6 py-3 sm:px-8 sm:py-4">
         <Link href="/" className="text-lg font-bold text-black sm:text-xl">
-          Quoin
+          Selah
         </Link>
 
         <ul className="hidden items-center gap-6 md:flex lg:gap-8">

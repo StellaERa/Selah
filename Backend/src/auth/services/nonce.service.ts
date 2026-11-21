@@ -35,7 +35,7 @@ export class NonceService {
 
     await this.nonceRepository.save(loginNonce);
 
-    const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+    const message = `Sign this message to authenticate with Selah: ${nonce}`;
 
     return {
       nonce,

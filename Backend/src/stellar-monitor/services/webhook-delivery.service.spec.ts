@@ -144,7 +144,7 @@ describe('WebhookDeliveryService', () => {
   });
 
   describe('signature generation', () => {
-    it('attaches an X-Stellara-Signature HMAC-SHA256 header', async () => {
+    it('attaches an X-Selah-Signature HMAC-SHA256 header', async () => {
       const consumer = makeConsumer();
       const event = makeEvent();
       const post = jest.fn().mockResolvedValue({ status: 200 });

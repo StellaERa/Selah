@@ -43,7 +43,7 @@ export class LoggingService {
       level: process.env.LOG_LEVEL || 'info',
       format: customFormat,
       defaultMeta: {
-        service: process.env.SERVICE_NAME || 'stellara-backend',
+        service: process.env.SERVICE_NAME || 'selah-backend',
       },
       transports: [
         // Console transport for development

@@ -1,308 +1,199 @@
-# Quoin
+# Selah
 
-**A social marketplace where clients consult Quantity Surveyors, compare construction rates, and get AI-assisted estimates, with every rate, estimate, and payment sealed on the Stellar Network.**
+> *Selah* (סֶלָה): a pause to reflect, found throughout the Psalms.
 
-Browse verified QS profiles, ask questions in public threads, book paid consultations in XLM or Stellar USDC, and track live construction rates by region. Every estimate is cryptographically sealed on-chain, and when the project finishes, the QS's accuracy is scored against real costs.
+**Selah** is an open-source Bible study and discipleship platform built on the [Stellar](https://stellar.org) network. It connects learners with teachers and mentors, gives small groups a transparent shared fund, and offers a study assistant that answers **only from Scripture, with citations**. Payments are made in USDC or XLM through Soroban smart contracts.
 
-![License: MIT](https://img.shields.io/badge/License-MIT-green) ![Network: Stellar](https://img.shields.io/badge/Network-Stellar-blue) ![Contracts: Soroban](https://img.shields.io/badge/Contracts-Soroban-purple) ![Monorepo: pnpm](https://img.shields.io/badge/Monorepo-pnpm-orange) ![Build: Turborepo](https://img.shields.io/badge/Build-Turborepo-red)
+> **Status:** early stage. This README describes the planned scope and architecture. Items under [Roadmap](#roadmap) are not built yet, and contributions are welcome.
 
 ---
 
-## What is Quoin?
+## Table of contents
 
-A *quoin* is the cornerstone at the corner of a wall, the stone every other course is aligned to. Quoin is the trust layer under construction cost advice.
+- [The problem](#the-problem)
+- [What Selah does](#what-selah-does)
+- [What makes it different](#what-makes-it-different)
+- [Architecture](#architecture)
+- [Smart contracts](#smart-contracts)
+- [Tech stack](#tech-stack)
+- [Repository structure](#repository-structure)
+- [Getting started](#getting-started)
+- [Roadmap](#roadmap)
+- [Starter issues](#starter-issues)
+- [Content and AI principles](#content-and-ai-principles)
+- [Contributing](#contributing)
+- [License](#license)
 
-Today, finding a good Quantity Surveyor (QS) and knowing whether their rates are fair is mostly word of mouth. Rates are private, estimates can't be audited, and clients have no way to tell an accurate QS from a confident one.
+---
 
-| Gap in today's market | Quoin's answer |
+## The problem
+
+- People who want structured Bible study, a mentor or a discipleship group often cannot find one that fits, and online options are scattered.
+- AI answers about Scripture can be wrong, or quietly present one denomination's view as the only one.
+- Teachers and mentors have no simple way to be paid across borders, and small groups that pool money have little transparency about how it is spent.
+
+## What Selah does
+
+1. **Courses and mentorship.** Students pay a teacher in USDC or XLM for a course or a one-to-one session. A Soroban contract splits each payment between the teacher and, optionally, a church or ministry.
+2. **Cited study assistant.** The assistant answers only from the selected Bible text, shows the verse references, states when a question is disputed between traditions, and routes doctrinal questions to a human teacher for review.
+3. **Study groups with a shared fund.** A group follows a shared reading plan and can pool contributions into a group fund. Spending needs approval from several leaders.
+4. **Paid community review.** Reviewers check study material in local languages and are paid from an escrow that releases when the work is approved.
+5. **Completion certificates.** Finishing a course records a verifiable certificate on-chain.
+
+## What makes it different
+
+| Area | Approach |
 |---|---|
-| Rates are opaque and negotiated blind | Public, on-chain **Rate Cards** per QS, comparable by region and work type |
-| No way to verify a QS's credentials or track record | On-chain credential attestations plus a per-QS **Accuracy Score** |
-| Estimates can be quietly revised after the fact | **Estimate Seal**: every BoQ is hash-anchored on Stellar with a timestamp |
-| Cross-border payment friction and disputes | Milestone **escrow** in XLM or Stellar USDC, settled in about 5 seconds |
-| Slow, manual takeoffs and BoQ drafting | **Quoin Copilot** (AI) drafts quantities and benchmarks rates |
-| Material prices go stale between quarterly reports | **Rate Pulse**: a live, staked, peer-verified material and labour price index |
+| **Denomination-neutral** | Users choose a canon (Protestant, Catholic or Orthodox) and a translation. The assistant and reading plans follow the choice. |
+| **Public-domain texts first** | The project ships with public-domain translations such as KJV, WEB and ASV. Copyrighted translations are used only with a licence. |
+| **Transparent group giving** | Group funds use multi-leader approval and a public, anonymized ledger. |
+| **Paid local-language review** | Escrow-backed review of study material in languages such as Hausa, Yoruba, Igbo and Nigerian Pidgin, where the source text may legally be used. |
+| **Honest AI** | Citations are required. If the assistant cannot cite a passage, it says so instead of answering. |
 
----
-
-## Core Features
-
-### Social and Marketplace
-- QS profiles with specialisations (residential, civil, MEP, roads, fit-out), credentials, and portfolio
-- Public Q&A feed where clients post cost questions and QSs answer, with upvotes, follows, and reputation
-- Private consultations via chat or call, paid per session or per milestone
-- Side-by-side rate comparison across QSs, regions, and work categories
-- Reviews tied to completed on-chain engagements, so only real clients can review
-
-### AI Features (Quoin Copilot)
-| Feature | What it does |
-|---|---|
-| **Smart BoQ Drafting** | Upload drawings or a plain-language brief. Copilot extracts quantities and drafts a Bill of Quantities for the QS to review |
-| **Rate Benchmarking** | Flags any line item priced outside the regional norm, with the Rate Pulse data as evidence |
-| **Client Cost Advisor** | A chat assistant that gives clients a ballpark range, explains construction terms, and recommends suitable QSs |
-| **Anomaly and Fraud Detection** | Detects inflated quantities, copy-pasted estimates, and suspicious review patterns |
-| **QS Match** | Ranks QSs by project type, budget, location, and Accuracy Score |
-
-AI output is always labelled as a draft. A human QS signs off before anything is sealed.
-
-### Unique Feature 1: Estimate Seal + Accuracy Score
-When a QS finalises a BoQ, Quoin hashes it and writes the hash, timestamp, and total to the `EstimateSeal` contract. The estimate can no longer be silently changed.
-
-When the project completes, the client submits the final cost (confirmed by the escrow milestones). The `AccuracyScore` contract compares the estimate to the actual cost and updates the QS's public, tamper-evident score.
-
-> A QS who is repeatedly within 3% of final cost earns a score no marketing can fake.
-
-### Unique Feature 2: Rate Pulse
-A community-verified, staked price index for construction inputs: cement, sand, steel, blocks, timber, plumbing, electrical, and labour trades, by city and country.
-
-- QSs submit observed prices and stake XLM behind them
-- Peer QSs cross-verify. Honest submissions earn Stellar USDC micro-rewards, and outliers or fraud are slashed
-- The result is a daily regional index that feeds Copilot's benchmarking and is open to anyone through the API
-
----
-
-## Monorepo Structure
+## Architecture
 
 ```
-quoin/
-├── packages/
-│   ├── contracts/      # @quoin/contracts  - Soroban smart contracts (Rust)
-│   ├── copilot/        # @quoin/copilot    - AI service: BoQ drafting, benchmarking, advisor (TypeScript + Python workers)
-│   ├── pulse/          # @quoin/pulse      - Rate Pulse oracle daemon and aggregation node (TypeScript)
-│   ├── api/            # @quoin/api        - Public REST + GraphQL API (Node.js)
-│   └── hub/            # @quoin/hub        - Client and QS social app (Next.js)
-├── docs/               # Architecture, methodology, accuracy-score formula, API reference
-├── scripts/            # Testnet bootstrap, seed data, deploy helpers
-├── audits/             # Smart contract audit reports
-├── pnpm-workspace.yaml
-├── turbo.json
-└── README.md           <- you are here
+                 +----------------------+
+                 |   Web app (Next.js)  |
+                 |  Freighter wallet    |
+                 +----------+-----------+
+                            |
+            +---------------+----------------+
+            |                                |
+   +--------v---------+             +--------v---------+
+   |  Backend API     |             |  Study assistant |
+   |  auth, courses,  |             |  citations only, |
+   |  groups, payments|             |  review routing  |
+   +--------+---------+             +--------+---------+
+            |                                |
+   +--------v---------+             +--------v---------+
+   |  PostgreSQL      |             |  Scripture index |
+   |  + event indexer |             |  (public-domain) |
+   +--------+---------+             +------------------+
+            |
+   +--------v---------------------------+
+   |  Soroban contracts on Stellar      |
+   |  payment-split | group-fund |      |
+   |  reviewer-escrow | certificates    |
+   +------------------------------------+
 ```
 
----
-
-## Packages
-
-### @quoin/contracts
-Soroban smart contracts in Rust, deployable to Stellar Testnet and Mainnet.
+## Smart contracts
 
 | Contract | Purpose |
 |---|---|
-| `QSRegistry` | QS identity, credential attestations (e.g. professional body membership), specialisations |
-| `RateCard` | Each QS's published rates by work category and region, versioned and timestamped |
-| `ConsultEscrow` | Holds XLM or USDC for consultations and milestones, releases on client approval, supports dispute resolution |
-| `EstimateSeal` | Anchors the hash, total, and timestamp of every finalised BoQ |
-| `AccuracyScore` | Compares sealed estimates to actual final costs and maintains each QS's score |
-| `RatePulseVault` | Stores staked material and labour price submissions, handles verification and slashing |
+| `payment-split` | Splits a course or session payment between teacher and optional church or ministry, by configured percentages. |
+| `group-fund` | Holds a study group's pooled funds. Spending requires approval from a threshold of group leaders. |
+| `reviewer-escrow` | Locks payment for review work and releases it when the requester approves. Supports a dispute window. |
+| `certificate-registry` | Records course completion so anyone can verify it. |
+
+Contracts are written in Rust for Soroban. Each one should ship with unit tests and a documented testnet deployment.
+
+## Tech stack
+
+- **Frontend:** Next.js, TypeScript, Tailwind CSS, Freighter wallet
+- **Backend:** Node.js with TypeScript, PostgreSQL, SEP-10 authentication
+- **Study assistant:** Python service with retrieval over the Scripture index, with mandatory citations
+- **Blockchain:** Stellar, Soroban smart contracts (Rust), USDC and XLM payments
+
+## Repository structure
+
+Planned monorepo layout:
 
 ```
-packages/contracts/
-├── src/
-│   ├── qs_registry.rs
-│   ├── rate_card.rs
-│   ├── consult_escrow.rs
-│   ├── estimate_seal.rs
-│   ├── accuracy_score.rs
-│   └── rate_pulse_vault.rs
-├── tests/
-├── Cargo.toml
+selah/
+├── apps/
+│   ├── web/            # Next.js frontend
+│   ├── api/            # backend API and event indexer
+│   └── assistant/      # citations-only study assistant
+├── contracts/
+│   ├── payment-split/
+│   ├── group-fund/
+│   ├── reviewer-escrow/
+│   └── certificate-registry/
+├── packages/
+│   └── sdk/            # TypeScript client for the contracts
+├── docs/
 └── README.md
 ```
-**Stack:** Rust, Soroban SDK, Stellar CLI
 
-### @quoin/copilot
-The AI layer. Exposes BoQ drafting, rate benchmarking, the client advisor, and fraud detection to the app and API.
+## Getting started
 
-```
-packages/copilot/
-├── src/
-│   ├── boq_drafter.ts      # Drawing/brief -> structured quantities
-│   ├── benchmark.ts        # Compare line items vs Rate Pulse index
-│   ├── advisor.ts          # Client cost-advice chat
-│   ├── matcher.ts          # QS recommendation ranking
-│   └── anomaly.ts          # Inflation / duplicate / review-fraud detection
-├── workers/                # Python workers for drawing parsing
-├── package.json
-└── README.md
-```
-**Stack:** TypeScript, Python, LLM API, vector store for rate and BoQ retrieval
+The project scaffolding is still being set up. Once it exists, the setup is expected to look like this:
 
-### @quoin/pulse
-A lightweight daemon run by community nodes. Streams `RatePulseVault` events, collects peer verifications, computes the daily regional median with outlier filtering, and publishes the index.
-
-```
-packages/pulse/
-├── src/
-│   ├── listener.ts         # Horizon event streaming
-│   ├── aggregator.ts       # Median + outlier filtering per region/material
-│   ├── submitter.ts        # Soroban contract invocation
-│   └── metrics.ts          # Prometheus exporter
-├── Dockerfile
-└── package.json
-```
-**Stack:** TypeScript, @stellar/stellar-sdk, Horizon API, Docker, Prometheus
-
-### @quoin/api
-Public read layer plus authenticated actions.
-
-```
-GET   /v1/qs                              Search and filter QSs
-GET   /v1/qs/:id                          Profile, rate card, Accuracy Score
-GET   /v1/qs/:id/estimates                Sealed estimates (hash + outcome)
-GET   /v1/rates?region=&category=         Compare QS rate cards
-GET   /v1/pulse/:region                   Latest Rate Pulse index
-GET   /v1/pulse/:region/history?from=&to= Historical index
-POST  /v1/consultations                   Book a consultation (wallet auth)
-POST  /v1/copilot/boq                     Draft a BoQ with AI (wallet auth)
-POST  /v1/estimates/seal                  Seal a finalised estimate (QS wallet)
-```
-**Stack:** Node.js, Fastify, GraphQL Yoga, PostgreSQL, Redis, @stellar/stellar-sdk
-
-### @quoin/hub
-The Next.js social app for clients and Quantity Surveyors.
-
-| Route | Description |
-|---|---|
-| `/` | Feed of trending questions, new QSs, and Rate Pulse highlights |
-| `/qs` | Search and filter surveyors |
-| `/qs/:id` | Profile, rate card, Accuracy Score, reviews, sealed estimates |
-| `/ask` | Post a cost question, or chat with Copilot first |
-| `/consult/:id` | Booking, chat, and escrow status |
-| `/compare` | Side-by-side rate comparison |
-| `/pulse` | Regional material and labour price explorer |
-| `/estimate` | Copilot BoQ drafting workspace for QSs |
-| `/wallet` | Earnings, escrow, and payment history |
-
-**Stack:** Next.js 14, TailwindCSS, @stellar/stellar-sdk, Freighter / LOBSTR / xBull wallet support, Recharts
-
----
-
-## How It Works
-
-```
-Client                 Stellar Ledger                    Quantity Surveyor
-  │                          │                                  │
-  ├─ Browse / compare ──────▶ RateCard + AccuracyScore (read)   │
-  ├─ Book consultation ─────▶ ConsultEscrow.lock()              │
-  │                          │◀──────────── drafts BoQ w/ Copilot┤
-  │                          │◀──────────── EstimateSeal.seal() ─┤  (hash + total)
-  ├─ Approve milestone ─────▶ ConsultEscrow.release() ─────────▶ QS paid (XLM/USDC)
-  │                          │                                  │
-  ├─ Project completes ─────▶ AccuracyScore.record(actual_cost) │
-  │                          │   -> QS Accuracy Score updated   │
-
-Rate Pulse nodes
-  ├─ Submit + stake ────────▶ RatePulseVault.submit()
-  ├─ Peer-verify ───────────▶ RatePulseVault.verify()
-  └─ Daily regional index ──▶ published on-chain, used by Copilot benchmarking
-```
-
----
-
-## Why Stellar?
-
-- **Fast, low-fee payments.** Consultations can be small (a few dollars), which only works with near-zero fees.
-- **Native stablecoin.** Stellar USDC protects both sides from volatility when quoting construction work.
-- **Cross-border by default.** Clients and surveyors in different countries can transact without a bank intermediary.
-- **Soroban smart contracts.** Escrow, sealing, and scoring logic is open, auditable, and forkable.
-- **Wallet-only onboarding.** Works with any Stellar wallet on a basic smartphone.
-
----
-
-## Token Economics
-
-Quoin has no proprietary token. All value moves in Stellar-native assets.
-
-| Action | Asset | Notes |
-|---|---|---|
-| Client pays for consultation | XLM or Stellar USDC | Held in escrow, released on approval |
-| Platform fee | 2% of consultation value | Funds the treasury |
-| QS submits a Rate Pulse price (verified) | Stellar USDC | ~$0.03 per verified entry |
-| Peer verifies a Rate Pulse entry | Stellar USDC | ~$0.01 per correct vote |
-| Pulse node operator (daily) | XLM | Small daily emission from treasury |
-| Fraudulent or outlier submission | Stake slashed | Share goes to correct verifiers |
-
-Treasury income comes from the platform fee and B2B licensing of the Rate Pulse dataset.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 20 or later
-- pnpm 9 or later
-- Rust stable and the Stellar CLI
-- A funded Stellar Testnet account (create one with Stellar Laboratory or `stellar keys generate --fund`)
-- API key for your chosen LLM provider (for `@quoin/copilot`)
-
-### Install
 ```bash
-git clone https://github.com/your-org/quoin.git
-cd quoin
-pnpm install
-cp .env.example .env     # add Stellar keys + LLM key
+git clone https://github.com/<your-org>/selah.git
+cd selah
+
+# contracts
+cd contracts/payment-split
+cargo test
+
+# web app
+cd ../../apps/web
+npm install
+npm run dev
 ```
 
-### Run in development
-```bash
-pnpm dev                                     # everything via Turborepo
-pnpm --filter @quoin/hub dev                # app only
-pnpm --filter @quoin/pulse start:testnet    # Rate Pulse node on Testnet
-```
-
-### Test
-```bash
-cd packages/contracts && cargo test
-pnpm turbo test
-pnpm turbo lint
-```
-
-### Deploy contracts to Testnet
-```bash
-cd packages/contracts
-stellar contract build
-bash ../../scripts/deploy_testnet.sh
-```
-
----
+Prerequisites: Node.js 20+, Rust with the `wasm32v1-none` target, the [Stellar CLI](https://developers.stellar.org/docs/tools/cli), and the [Freighter](https://www.freighter.app/) wallet. Use **Stellar Testnet** during development.
 
 ## Roadmap
 
-| Phase | Milestone |
-|---|---|
-| 1 | Contracts (`QSRegistry`, `RateCard`, `ConsultEscrow`) and Testnet app with profiles and booking |
-| 2 | `EstimateSeal`, Copilot BoQ drafting, rate comparison |
-| 3 | `AccuracyScore` and review system tied to completed engagements |
-| 4 | Rate Pulse oracle network, staking, and public index API |
-| 5 | Mainnet launch, security audit, mobile-first PWA, regional expansion |
+**Phase 1: foundations**
+- [ ] Monorepo scaffolding and CI
+- [ ] `payment-split` contract with tests
+- [ ] Wallet login (SEP-10) and basic user profiles
 
----
+**Phase 2: learning**
+- [ ] Course and mentor listings
+- [ ] USDC checkout using `payment-split`
+- [ ] Scripture index with KJV and WEB
+- [ ] Citations-only study assistant (first version)
 
-## Security
+**Phase 3: groups and review**
+- [ ] `group-fund` contract and group dashboard
+- [ ] Reading plans for groups
+- [ ] `reviewer-escrow` contract and review workflow
 
-- Contract audit: pending, with reports to be published in `audits/`
-- AI output is advisory only and never auto-sealed or auto-paid
-- Escrow disputes route to a multi-party arbiter set, with the logic open in `ConsultEscrow`
-- Responsible disclosure: `security@your-domain.example`
+**Phase 4: trust and reach**
+- [ ] `certificate-registry` and public verification page
+- [ ] Pastor and teacher review queue for doctrinal questions
+- [ ] Local-language support where licensing allows
 
----
+## Starter issues
+
+Good places to begin (labels in brackets):
+
+- Write the `payment-split` contract with percentage validation `[contracts]` `[good first issue]`
+- Add unit tests for rounding and zero-amount payments `[contracts]` `[good first issue]`
+- Implement threshold approval in `group-fund` `[contracts]`
+- Add a dispute window to `reviewer-escrow` `[contracts]`
+- Build the SEP-10 wallet login endpoint `[backend]`
+- Create the Soroban event indexer for payment events `[backend]`
+- Import the public-domain KJV and WEB texts into the Scripture index `[assistant]` `[good first issue]`
+- Add a verse-citation check that rejects uncited answers `[assistant]`
+- Build the translation and canon selector component `[frontend]` `[good first issue]`
+- Design the group dashboard showing the public fund ledger `[frontend]`
+- Write the contributor guide and local setup docs `[docs]` `[good first issue]`
+- Add GitHub Actions for `cargo test`, lint and type checks `[devops]`
+
+## Content and AI principles
+
+- **Citations are mandatory.** The assistant must show the passage it is answering from. No citation, no answer.
+- **No false authority.** The assistant is a study aid, not a pastor. Disputed or doctrinal questions are marked as such and offered for human review.
+- **Respect all traditions.** Canon and translation choices are the user's. Defaults must not favour one denomination.
+- **Respect licences.** Only public-domain or properly licensed texts may be included in the repository or the index.
+- **No financial promises.** Group funds and payments are tools for transparency, not investments.
 
 ## Contributing
 
-```bash
-git checkout -b feat/your-feature
-pnpm turbo test
-pnpm turbo lint
-# open a PR against main
-```
-See `CONTRIBUTING.md` and `docs/architecture.md`.
+1. Fork the repository and create a branch for your change.
+2. Pick an issue, or open one to discuss your idea first.
+3. Write tests for contract and backend changes.
+4. Open a pull request that explains what you changed and why.
 
----
+Please be respectful and keep discussions focused on the work. A `CODE_OF_CONDUCT.md` and `CONTRIBUTING.md` will be added with the first release.
 
 ## License
 
-MIT, 2026 Quoin Contributors
-
----
-
-*Built on Stellar. Powered by Soroban. Honest numbers for everything we build.*
+Released under the [MIT License](LICENSE).

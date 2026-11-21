@@ -121,6 +121,58 @@ This project uses **HashiCorp Vault** for secure secrets management. Secrets are
 
 ---
 
+## API Reference
+
+The NestJS Swagger document is generated from the current controllers and is
+available at **`/api/docs`** while the backend is running. It includes operation
+details, request schemas, and authorization requirements. The following route
+index reflects the currently registered HTTP endpoints; parameters such as
+`:id` are path parameters.
+
+| Base path | Methods and routes |
+|-----------|--------------------|
+| `/` | `GET /` |
+| `/health` | `GET /live`, `GET /ready` |
+| `/auth` | `POST /nonce`, `POST /wallet/login`, `POST /refresh`, `POST /logout`, `GET /me`, `POST /wallet/bind`, `DELETE /wallet/unbind`, `POST /api-token`, `GET /api-token`, `DELETE /api-token/:id` |
+| `/admin/workflows` | `GET /`, `GET /:id`, `GET /:id/timeline`, `POST /:id/retry`, `POST /:id/cancel`, `POST /:id/compensate`, `GET /:id/steps/:stepId`, `POST /:id/steps/:stepId/retry`, `GET /stats/overview`, `GET /search`, `POST /recovery/trigger`, `GET /metrics`, `GET /health`, `GET /compensatable`, `POST /:id/force-compensate` |
+| `/api/stellar` | `POST /consumers`, `GET /consumers`, `GET /consumers/:id`, `PUT /consumers/:id`, `DELETE /consumers/:id`, `POST /consumers/:id/activate`, `POST /consumers/:id/deactivate`, `POST /consumers/:id/test`, `POST /consumers/:id/rotate-secret`, `GET /events`, `GET /events/:id`, `GET /stats`, `POST /monitor/start`, `POST /monitor/stop`, `GET /monitor/status`, `POST /simulate/payment`, `POST /simulate/offer` |
+| `/market-data` | `GET /snapshot`, `GET /news`, `GET /cache/stats`, `GET /cache/stats/market`, `GET /cache/stats/news`, `POST /cache/invalidate`, `POST /cache/invalidate/market`, `POST /cache/invalidate/news` |
+| `/voice` | `POST /stt/upload`, `POST /tts/generate`, `GET /job/:id`, `GET /job/:id/result` |
+| `/ai` | `POST /prompt` |
+| `/admin` | `GET /audit-logs`, `POST /job-requeue`, `POST /moderate-content`, `POST /webhooks` |
+| `/admin/queue` | `GET /`, `GET /stats/:queueName`, `GET /:queueName/jobs`, `GET /:queueName/jobs/:jobId`, `GET /:queueName/dlq`, `POST /:queueName/jobs/:jobId/requeue`, `POST /:queueName/dlq/requeue`, `POST /:queueName/purge` |
+| `/admin/audit` | `GET /logs`, `GET /verify` |
+| `/audit` | `GET /verify` |
+| `/secrets` | `POST /rotate`, `GET /rotatable`, `GET /status` |
+| `/metrics` | `GET /` |
+
+### Rate limiting
+
+The current limits are defined in `src/throttle/throttle.constants.ts` and are
+code-configured (there are no rate-limit environment variables):
+
+| Scope | Requests | Window |
+|-------|----------|--------|
+| Auth routes (`/auth`) | 5 | 60 seconds |
+| All other HTTP routes | 100 | 60 seconds |
+| Market (reserved constant) | 60 | 60 seconds |
+| Chat (reserved constant) | 30 | 60 seconds |
+
+The guard currently applies the auth limit to paths containing `/auth` and the
+global limit to every other HTTP path. The market and chat constants are not
+selected by the guard yet. Counters are per route path and use the authenticated
+user ID when available, otherwise the request IP. Responses include
+`X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` headers.
+After three exceeded-limit requests, the identifier is temporarily banned;
+the ban duration follows `60 × 2^(violation count - 1)` seconds (four minutes
+at the third violation).
+
+### Redis command connections
+
+The shared Redis command client maintains at least 5 connections and can grow
+to 200 concurrent connections. Pub/Sub clients remain dedicated connections.
+These pool bounds are configured in `src/redis/redis.service.ts`.
+
 ## 📐 API Error Contract (issue #827)
 
 All responses from the Quoin API follow a **consistent envelope shape**, whether the call succeeds or fails. This makes it simple for frontend clients and third-party consumers to handle responses uniformly.

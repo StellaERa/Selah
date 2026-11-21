@@ -1,17 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, LoggerService } from '@nestjs/common';
+import { mkdirSync } from 'node:fs';
 import * as winston from 'winston';
 import { LogContext } from '../types/trace-context.interface';
+import { SecretsMaskingService } from '../../config/secrets-masking.service';
 
 /**
  * Structured logging service using Winston
  * Integrates with distributed tracing for contextual logging
  */
 @Injectable()
-export class LoggingService {
+export class LoggingService implements LoggerService {
   private logger: winston.Logger;
   private requestContextStorage = new Map<string, LogContext>();
 
-  constructor() {
+  constructor(private readonly secretsMaskingService: SecretsMaskingService) {
+    mkdirSync('logs', { recursive: true });
     this.initializeLogger();
   }
 
@@ -29,8 +32,8 @@ export class LoggingService {
           const context: Record<string, unknown> = {
             level,
             timestamp,
-            message,
-            ...meta,
+            message: this.sanitizeLogValue(message),
+            ...(this.sanitizeLogValue(meta) as Record<string, unknown>),
           };
           if (traceId) context.traceId = traceId;
           if (spanId) context.spanId = spanId;
@@ -98,49 +101,111 @@ export class LoggingService {
   }
 
   /**
-   * Log error level message with context
+   * Log an error using the Nest LoggerService signature.
    */
-  error(
-    message: string,
-    error?: Error | any,
-    context?: LogContext | Record<string, any>,
-  ) {
-    const meta = context || {};
-    if (error instanceof Error) {
-      meta['error'] = {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      };
-    } else if (error) {
-      meta['error'] = error;
+  error(message: any, ...optionalParams: any[]): void {
+    this.write('error', message, optionalParams);
+  }
+
+  /**
+   * Log a warning using the Nest LoggerService signature.
+   */
+  warn(message: any, ...optionalParams: any[]): void {
+    this.write('warn', message, optionalParams);
+  }
+
+  /**
+   * Log a debug message using the Nest LoggerService signature.
+   */
+  debug(message: any, ...optionalParams: any[]): void {
+    this.write('debug', message, optionalParams);
+  }
+
+  /**
+   * Log a message using the Nest LoggerService signature.
+   */
+  log(message: any, ...optionalParams: any[]): void {
+    this.write('info', message, optionalParams);
+  }
+
+  verbose(message: any, ...optionalParams: any[]): void {
+    this.write('verbose', message, optionalParams);
+  }
+
+  fatal(message: any, ...optionalParams: any[]): void {
+    this.write('error', message, optionalParams);
+  }
+
+  private write(level: string, message: any, optionalParams: unknown[]) {
+    const meta: Record<string, unknown> = {};
+    for (const [index, param] of optionalParams.entries()) {
+      if (typeof param === 'string') {
+        meta[index === 0 && optionalParams.length > 1 ? 'stack' : 'context'] =
+          param;
+      } else if (param instanceof Error) {
+        meta.error = param;
+      } else if (param && typeof param === 'object' && !Array.isArray(param)) {
+        Object.assign(meta, param);
+      }
     }
-    this.logger.error(message, meta);
+
+    this.logger.log(level, message, meta);
   }
 
-  /**
-   * Log warn level message with context
-   */
-  warn(message: string, context?: LogContext | Record<string, any>) {
-    this.logger.warn(message, context);
-  }
+  private sanitizeLogValue(
+    value: unknown,
+    fieldName?: string,
+    seen = new WeakSet<object>(),
+  ): unknown {
+    if (
+      fieldName &&
+      /password|passwd|secret|token|authorization|cookie|credential|private.?key|public.?key|mnemonic|seed|signature|api.?key|email|phone|address|wallet|user.?id|(?:^|_)ip(?:$|_)/i.test(
+        fieldName,
+      )
+    ) {
+      return '[REDACTED]';
+    }
 
-  /**
-   * Log debug level message with context
-   */
-  debug(message: string, context?: LogContext | Record<string, any>) {
-    this.logger.debug(message, context);
-  }
+    if (typeof value === 'string') {
+      return this.secretsMaskingService.mask(value);
+    }
 
-  /**
-   * Log with custom level
-   */
-  log(
-    level: string,
-    message: string,
-    context?: LogContext | Record<string, any>,
-  ) {
-    this.logger.log(level, message, context);
+    if (value instanceof Error) {
+      return this.sanitizeLogValue({
+        name: value.name,
+        message: value.message,
+        stack: value.stack,
+      });
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    if (Array.isArray(value)) {
+      if (seen.has(value)) return '[Circular]';
+      seen.add(value);
+      const sanitized = value.map((item) =>
+        this.sanitizeLogValue(item, undefined, seen),
+      );
+      seen.delete(value);
+      return sanitized;
+    }
+
+    if (value !== null && typeof value === 'object') {
+      if (seen.has(value)) return '[Circular]';
+      seen.add(value);
+      const sanitized = Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          this.sanitizeLogValue(item, key, seen),
+        ]),
+      );
+      seen.delete(value);
+      return sanitized;
+    }
+
+    return value;
   }
 
   /**

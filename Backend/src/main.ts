@@ -11,6 +11,7 @@ import { SecretsRotationService } from './config/secrets-rotation.service';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseEnvelopeInterceptor } from './common/interceptors/response-envelope.interceptor';
 import { CorrelationMiddleware } from './observability/middleware/correlation.middleware';
+import { LoggingService } from './observability/services/logging.service';
 
 /**
  * Lightweight inline masker used before the DI container is ready
@@ -52,6 +53,7 @@ async function bootstrap() {
       : ['error', 'warn', 'log', 'debug'],
   });
 
+  app.useLogger(app.get(LoggingService));
   app.enableShutdownHooks();
 
   logger.log(`Phase 1/3: ✅ Container ready (${Date.now() - containerStart}ms)`);

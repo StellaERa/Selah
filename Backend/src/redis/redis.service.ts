@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { createClient, RedisClientType } from 'redis';
+import { createClient, createClientPool, RedisClientType } from 'redis';
 import { SecretsMaskingService } from '../config/secrets-masking.service';
 import { SecretsRotationService } from '../config/secrets-rotation.service';
 import { buildRedisUrl } from './redis.config';
@@ -8,7 +8,7 @@ import { buildRedisUrl } from './redis.config';
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
 
-  public client!: RedisClientType;
+  public client!: ReturnType<typeof createClientPool>;
   public pubClient!: RedisClientType;
   public subClient!: RedisClientType;
 
@@ -38,7 +38,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Establish connections for all three Redis client instances.
+   * Establish the command pool and dedicated Pub/Sub Redis clients.
    * Logs only a masked version of the Redis URL so credentials never appear
    * in application logs.
    */
@@ -48,13 +48,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`Connecting to Redis: ${safeUrl}`);
 
-    this.client = createClient({ url }) as RedisClientType;
+    this.client = createClientPool(
+      { url },
+      { minimum: 5, maximum: 200 },
+    );
     this.pubClient = createClient({ url }) as RedisClientType;
     this.subClient = createClient({ url }) as RedisClientType;
 
-    // Attach error listeners that always log masked messages
+    // Attach error listeners that always log masked messages.
     this.client.on('error', (err: Error) => {
-      this.logger.error(`Redis client error: ${this.maskingService.mask(err.message)}`);
+      this.logger.error(`Redis pool error: ${this.maskingService.mask(err.message)}`);
     });
     this.pubClient.on('error', (err: Error) => {
       this.logger.error(`Redis pubClient error: ${this.maskingService.mask(err.message)}`);
@@ -96,7 +99,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
    */
   private async quit(): Promise<void> {
     await Promise.all([
-      this.client?.quit().catch(() => {}),
+      this.client?.close().catch(() => {}),
       this.pubClient?.quit().catch(() => {}),
       this.subClient?.quit().catch(() => {}),
     ]);

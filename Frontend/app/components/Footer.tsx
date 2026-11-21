@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const FOOTER_LINKS = [
   { label: "Home", href: "/" },
-  { label: "ABI Admin", href: "/admin/abis" },
+  { label: "Dashboard", href: "/dashboard" },
 ] as const;
 
 export default function Footer() {
@@ -10,7 +10,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-white/10 bg-black px-6 py-8 text-white">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
         <Link href="/" className="text-lg font-semibold">
-          Quoin
+          Selah
         </Link>
 
         <nav aria-label="Footer navigation">
@@ -25,7 +25,7 @@ export default function Footer() {
             <li>
               <a
                 className="transition-colors hover:text-white"
-                href="https://github.com/SkyyNineCrew/Quoin"
+                href="https://github.com/StellaERa/Selah"
                 target="_blank"
                 rel="noopener noreferrer"
               >

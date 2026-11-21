@@ -1,8 +1,8 @@
 {
-  "name": "@quoin/api",
+  "name": "@selah/api",
   "version": "0.1.0",
-  "description": "Quoin API backend",
-  "author": "Quoin",
+  "description": "Selah API backend",
+  "author": "Selah",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

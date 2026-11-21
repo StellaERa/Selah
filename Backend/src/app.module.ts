@@ -57,7 +57,7 @@ import { validateEnvironment } from './config/environment-validation';
         port: configService.get('DB_PORT', 5432),
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE', 'stellara_workflows'),
+        database: configService.get('DB_DATABASE', 'selah'),
         entities: [
           Workflow,
           WorkflowStep,

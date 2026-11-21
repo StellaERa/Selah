@@ -1,7 +1,7 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
-const TOKEN_KEY = "quoin_access_token";
+const TOKEN_KEY = "Selah_access_token";
 
 /** Access token persisted in localStorage so it survives reloads. */
 export function getToken(): string | null {

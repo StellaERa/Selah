@@ -10,7 +10,7 @@ import { TraceContext, TraceHeaders } from '../types/trace-context.interface';
 export class TracingService implements OnModuleDestroy {
   private traceContextMap = new Map<string, TraceContext>();
   private readonly SERVICE_NAME =
-    process.env.SERVICE_NAME || 'stellara-backend';
+    process.env.SERVICE_NAME || 'selah-backend';
   private jaegerEnabled = process.env.JAEGER_ENABLED === 'true';
   private jaegerAgentHost = process.env.JAEGER_AGENT_HOST || 'localhost';
   private jaegerAgentPort = parseInt(process.env.JAEGER_AGENT_PORT || '6831');

@@ -58,7 +58,7 @@ describe('Auth Integration Tests (e2e)', () => {
       .send({ publicKey: keypair.publicKey() });
 
     const nonce = nonceRes.body.nonce;
-    const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+    const message = `Sign this message to authenticate with Selah: ${nonce}`;
     const signature = nacl.sign.detached(
       Buffer.from(message, 'utf-8'),
       keypair.rawSecretKey(),
@@ -144,7 +144,7 @@ describe('Auth Integration Tests (e2e)', () => {
         .send({ publicKey: testKeypair.publicKey() });
 
       const nonce = nonceResponse.body.nonce;
-      const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+      const message = `Sign this message to authenticate with Selah: ${nonce}`;
       const messageBytes = Buffer.from(message, 'utf-8');
       const signature = nacl.sign.detached(
         messageBytes,
@@ -373,7 +373,7 @@ describe('Auth Integration Tests (e2e)', () => {
         .expect(401);
 
       // Same nonce should still work with the correct signature
-      const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+      const message = `Sign this message to authenticate with Selah: ${nonce}`;
       const signature = nacl.sign.detached(
         Buffer.from(message, 'utf-8'),
         testKeypair.rawSecretKey(),
@@ -455,7 +455,7 @@ describe('Auth Integration Tests (e2e)', () => {
         .send({ publicKey: testKeypair2.publicKey() });
 
       const nonce = nonceResponse.body.nonce;
-      const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+      const message = `Sign this message to authenticate with Selah: ${nonce}`;
       const signature = nacl.sign.detached(
         Buffer.from(message, 'utf-8'),
         testKeypair2.rawSecretKey(),
@@ -478,7 +478,7 @@ describe('Auth Integration Tests (e2e)', () => {
         .send({ publicKey: testKeypair2.publicKey() });
 
       const nonce = nonceResponse.body.nonce;
-      const message = `Sign this message to authenticate with Stellara: ${nonce}`;
+      const message = `Sign this message to authenticate with Selah: ${nonce}`;
       const signature = nacl.sign.detached(
         Buffer.from(message, 'utf-8'),
         testKeypair2.rawSecretKey(),

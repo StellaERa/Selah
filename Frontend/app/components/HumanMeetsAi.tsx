@@ -11,16 +11,16 @@ export default function HumanMeetsAi() {
                 </h2>
                 <div className="mb-8 sm:mb-0 self-start">
                     <p className="font-light text-[20px] sm:text-[28px] font-serif">
-                        <q>The Academy That Trades With You</q>
+                        <q>Scripture study that stays accountable</q>
                     </p>
                     <p className="font-light text-[20px] sm:text-[28px] font-serif">
-                        <q>From Zero to On-Chain</q>
+                        <q>From reading plans to mentorship</q>
                     </p>
                     <p className="font-light text-[20px] sm:text-[28px] font-serif">
-                        <q>Learn. Earn. Evolve — on Stellar.</q>
+                        <q>Study. Grow. Serve — on Stellar.</q>
                     </p>
                     <p className="font-light text-[20px] sm:text-[28px] font-serif">
-                        <q>Your AI Mentor. Your Blockchain. Your Edge.</q>
+                        <q>Cited answers with human review.</q>
                     </p>
                 </div>
                 <Image

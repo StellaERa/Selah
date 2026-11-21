@@ -3,7 +3,7 @@ import Image from "next/image";
 const FEATURES = [
   {
     icon: "/images/aiPoweredCryptoEdu.png",
-    label: "AI-Powered Crypto Education",
+    label: "Cited Scripture Study",
   },
   {
     icon: "/images/stellar.png",
@@ -11,11 +11,11 @@ const FEATURES = [
   },
   {
     icon: "/images/communitynscoial.png",
-    label: "Community & Social",
+    label: "Study Groups",
   },
   {
     icon: "/images/tradingnwallet.png",
-    label: "Trading & Wallet",
+    label: "USDC & XLM",
   },
 ] as const;
 

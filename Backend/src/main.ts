@@ -136,9 +136,9 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Quoin API')
+    .setTitle('Selah API')
     .setDescription(
-      'API for Quoin authentication, construction-cost workflows, Stellar monitoring, and webhook delivery',
+      'API for Selah authentication, study groups, mentorship, payments, and Stellar event monitoring',
     )
     .setVersion('1.0')
     .addTag('Authentication')

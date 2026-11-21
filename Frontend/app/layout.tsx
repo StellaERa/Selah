@@ -16,9 +16,9 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Quoin — Trusted construction cost intelligence.",
+  title: "Selah — Scripture study and discipleship",
   description:
-    "Quoin helps clients compare quantity surveyors, benchmark rates, and seal estimates on the Stellar Network.",
+    "Selah connects learners with teachers and groups, and provides cited Scripture study on the Stellar network.",
 };
 
 export default function RootLayout({

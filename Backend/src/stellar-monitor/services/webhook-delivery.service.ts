@@ -36,7 +36,7 @@ export class WebhookDeliveryService {
   /** Max delivery attempts before an event is moved to the dead-letter state. */
   static readonly MAX_ATTEMPTS = 5;
   /** Outbound HMAC signature header name. */
-  static readonly SIGNATURE_HEADER = 'X-Stellara-Signature';
+  static readonly SIGNATURE_HEADER = 'X-Selah-Signature';
 
   // Keys (`${eventId}:${consumerId}`) already delivered — guarantees idempotency
   // so a duplicate queue entry or retry can never double-deliver.
